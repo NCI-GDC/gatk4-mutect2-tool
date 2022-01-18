@@ -1,0 +1,4 @@
+exclude Jenkinsfile
+exclude .travis.yml
+exclude .pre-commit-config.yaml
+exclude .secrets.baseline

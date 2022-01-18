@@ -1,0 +1,12 @@
+-c requirements.txt
+detect-secrets==1.0.3
+isort
+flake8
+flake8-docstrings
+pre-commit>=2.9.0
+tox
+mock
+pytest
+pytest-cov
+mypy
+black
