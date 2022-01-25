@@ -43,7 +43,7 @@ CMD_STR = dedent(
 ).strip()
 
 
-def setup_logger():
+def setup_logger() -> None:
     """
     Sets up the logger.
     """
@@ -55,7 +55,9 @@ def setup_logger():
     logger.addHandler(handler)
 
 
-def subprocess_commands_pipe(cmd: str, timeout: int, di=DI) -> PopenReturn:
+def subprocess_commands_pipe(
+    cmd: str, timeout: int, di: SimpleNamespace = DI
+) -> PopenReturn:
     """run pool commands"""
 
     output = di.subprocess.Popen(
@@ -81,7 +83,7 @@ def tpe_submit_commands(
     thread_count: int,
     timeout: int,
     fn: Callable = subprocess_commands_pipe,
-    di=DI,
+    di: SimpleNamespace = DI,
 ) -> list:
     """Run commands on multiple threads.
 
@@ -171,8 +173,8 @@ def process_argv(argv: Optional[List] = None) -> namedtuple:
         for arg in cmds:
             of.writelines(arg + '\n')
     args_dict['arg_file'] = os.path.abspath(arg_file)
-    run_args = namedtuple('RunArgs', list(args_dict.keys()))
-    return run_args(**args_dict)
+    run_args = namedtuple('RunArgs', list(args_dict.keys()))  # type: ignore
+    return run_args(**args_dict)  # type: ignore
 
 
 def yield_formatted_commands(
@@ -201,7 +203,7 @@ def yield_formatted_commands(
         yield cmd
 
 
-def setup_parser():
+def setup_parser() -> argparse.ArgumentParser:
     """
     Loads the parser
     """
@@ -602,7 +604,7 @@ def setup_parser():
     return parser
 
 
-def run(run_args):
+def run(run_args) -> None:
     """
     Main script logic.
     Creates Mutect2 commands for each BED region and executes in multiple threads.
@@ -635,13 +637,16 @@ def run(run_args):
     return
 
 
-def main(argv=None) -> int:
+def main(argv: list = None) -> int:
     exit_code = 0
 
     argv = argv or sys.argv
     args = process_argv(argv)
     setup_logger()
     start = time.time()
+    import pdb
+
+    pdb.set_trace()
     try:
         run(args)
         logger.info("Finished, took %s seconds.", round(time.time() - start, 2))
