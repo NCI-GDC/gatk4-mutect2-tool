@@ -1,35 +1,52 @@
-REPO = bio-python-template
+VERSION = 1.0.0
+REPO = gatk4-mutect2-tool
+MODULE = gatk4_mutect2_tool
+BRANCH_NAME?=unknown
 
-MODULE = python_project
+GIT_SHORT_HASH:=$(shell git rev-parse --short HEAD)
 
-# Redirect error when run in container
-COMMIT_HASH:=$(shell git rev-parse HEAD 2>/dev/null)
-GIT_DESCRIBE:=$(shell git describe --tags 2>/dev/null)
+LONG_VERSION:=$(shell python3 setup.py -q capture_version --semver ${VERSION} --branch ${BRANCH_NAME})
+PYPI_VERSION:=$(shell python3 setup.py -q print_version --pypi)
+COMMIT_HASH:=$(shell python3 setup.py -q print_version --hash)
 
 DOCKER_REPO := quay.io/ncigdc
+DOCKER_IMAGE := ${DOCKER_REPO}/${REPO}:${LONG_VERSION}
 DOCKER_IMAGE_COMMIT := ${DOCKER_REPO}/${REPO}:${COMMIT_HASH}
-DOCKER_IMAGE_DESCRIBE := ${DOCKER_REPO}/${REPO}:${GIT_DESCRIBE}
 DOCKER_IMAGE_LATEST := ${DOCKER_REPO}/${REPO}:latest
+DOCKER_IMAGE_STAGING := ${DOCKER_REPO}/${REPO}:staging
+DOCKER_IMAGE_RELEASE := ${DOCKER_REPO}/${REPO}:${VERSION}
 
 .PHONY: version version-*
 version:
-	@python setup.py --version
+	@echo --- VERSION: ${LONG_VERSION} ---
+
+version-short:
+	@echo ${VERSION}
+
+version-long:
+	@echo ${LONG_VERSION}
+
+version-pypi:
+	@echo ${PYPI_VERSION}
 
 version-docker:
-	@echo ${DOCKER_IMAGE_DESCRIBE}
+	@echo ${DOCKER_IMAGE}
+	@echo ${DOCKER_IMAGE_COMMIT}
+	@echo ${DOCKER_IMAGE_LATEST}
 
 .PHONY: docker-login
 docker-login:
 	docker login -u="${QUAY_USERNAME}" -p="${QUAY_PASSWORD}" quay.io
 
 
-.PHONY: init init-*
+.PHONY: build build-* clean init init-* lint requirements run version
 init: init-pip init-hooks
-init-pip: init-venv
+
+init-pip:
 	@echo
 	@echo -- Installing pip packages --
-	pip-sync requirements.txt dev-requirements.txt
-	python setup.py develop
+	pip3 install --no-cache-dir -r requirements.txt
+	python3 setup.py develop
 
 init-hooks:
 	@echo
@@ -38,71 +55,67 @@ init-hooks:
 
 init-venv:
 	@echo
-	PIP_REQUIRE_VIRTUALENV=true python -m pip install --upgrade pip pip-tools
+	PIP_REQUIRE_VIRTUALENV=true pip3 install --upgrade pip-tools
 
-.PHONY: clean clean-*
-clean: clean-dirs
-clean-dirs:
+clean:
 	rm -rf ./build/
 	rm -rf ./dist/
 	rm -rf ./*.egg-info/
-	rm -rf ./test-reports/
-	rm -rf ./htmlcov/
 
-clean-docker:
+lint:
 	@echo
+	@echo -- Lint --
+	python3 -m flake8 \
+		--ignore=E501,F401,E302,E502,E126,E731,W503,W605,F841,C901 \
+		${MODULE}/
 
+run:
+	bin/run
 
-.PHONY: requirements requirements-*
-requirements: init-venv requirements-prod requirements-dev
-requirements-dev:
-	pip-compile -o dev-requirements.txt dev-requirements.in
-
-requirements-prod:
-	pip-compile -o requirements.txt
+requirements: init-venv
+	python3 setup.py -q capture_requirements --dev
+	pip-compile -o requirements.txt requirements.in
 
 .PHONY: build build-*
 
 build: build-docker
 
-build-docker: clean
+build-docker: docker-login
 	@echo
 	@echo -- Building docker --
+	python3 setup.py build
+	mkdir -p dist
+	cp -r build/lib/* dist/
+	cp -r bin/ dist/
+	cp -f Makefile requirements.txt README.md setup.py dist/
 	docker build . \
 		--file ./Dockerfile \
-		--build-arg http_proxy=${PROXY} \
-		--build-arg https_proxy=${PROXY} \
 		-t "${DOCKER_IMAGE_COMMIT}" \
+		-t "${DOCKER_IMAGE}" \
 		-t "${DOCKER_IMAGE_LATEST}"
 
-build-pypi: clean
-	@echo
-	tox -e check_dist
-
-.PHONY: lint test test-* tox
-test: tox
-lint:
-	@echo
-	@echo -- Lint --
-	tox -p -e flake8
+.PHONY: test test-*
+test: lint test-unit
 
 test-unit:
-	pytest tests/
+	@echo
+	@echo -- Unit Test --
+	python3 -m pytest --cov-report term-missing --cov=${MODULE} tests/
 
 test-docker:
 	@echo
+	@echo -- Running Docker Test --
+	docker run --rm ${DOCKER_IMAGE_LATEST} test
 
-tox:
-	@echo
-	TOX_PARALLEL_NO_SPINNER=1 tox -p --recreate
-
-.PHONY: publish-*
-publish-docker:
-	docker tag ${DOCKER_IMAGE_COMMIT} ${DOCKER_IMAGE_DESCRIBE}
+.PHONY: publish publish-*
+publish: docker-login
 	docker push ${DOCKER_IMAGE_COMMIT}
-	docker push ${DOCKER_IMAGE_DESCRIBE}
 
-publish-pypi:
-	@echo
-	@echo Publishing wheel
-	python3 -m twine upload dist/*
+publish-staging: publish
+	docker tag ${DOCKER_IMAGE_LATEST} ${DOCKER_IMAGE_STAGING}
+	docker push ${DOCKER_IMAGE_STAGING}
+	docker push ${DOCKER_IMAGE}
+
+publish-release: publish
+	docker tag ${DOCKER_IMAGE_LATEST} ${DOCKER_IMAGE_RELEASE}
+	docker push ${DOCKER_IMAGE_RELEASE}
