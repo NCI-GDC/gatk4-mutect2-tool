@@ -647,9 +647,6 @@ def main(argv: list = None) -> int:
     args = process_argv(argv)
     setup_logger()
     start = time.time()
-    import pdb
-
-    pdb.set_trace()
     try:
         run(args)
         logger.info("Finished, took %s seconds.", round(time.time() - start, 2))

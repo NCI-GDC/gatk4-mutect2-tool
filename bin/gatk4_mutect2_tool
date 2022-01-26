@@ -1,9 +1,0 @@
-#!/bin/bash
-
-set -eo pipefail
-
-case "$1" in
-	test) python -m pytest tests;;
-	*version) python -m gatk4_mutect2_tool --version;;
-	*) python -m gatk4_mutect2_tool $@;;
-esac
