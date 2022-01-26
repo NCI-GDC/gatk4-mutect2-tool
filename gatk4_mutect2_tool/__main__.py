@@ -3,7 +3,9 @@ import sys
 
 from gatk4_mutect2_tool import multi_gatk4_mutect2
 
-if __name__ == "__main__":
+
+def main() -> int:
+
     # CLI Entrypoint.
     retcode = 0
 
@@ -14,5 +16,9 @@ if __name__ == "__main__":
         retcode = 1
 
     sys.exit(retcode)
+
+
+if __name__ == "__main__":
+    main()
 
 # __END__
