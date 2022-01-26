@@ -17,7 +17,10 @@ from textwrap import dedent
 from types import SimpleNamespace
 from typing import Any, Callable, Generator, List, NamedTuple, Optional
 
-from gatk4_mutect2_tool import __version__
+try:
+    from gatk4_mutect2_tool import __version__
+except Exception:
+    __version__ = '0.0.0'
 
 logger = logging.getLogger(__name__)
 
@@ -132,7 +135,7 @@ def key_to_cmd(string: str) -> str:
     return '--{}'.format(string.replace('_', '-'))
 
 
-def process_argv(argv: Optional[List] = None) -> namedtuple:
+def process_argv(argv: Optional[List] = None) -> argparse.Namespace:
     """
     prepare GATK4.2.4.1 Mutect2 cmd based on the python parameters.
     args: parser.parse_args()
@@ -604,7 +607,7 @@ def setup_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def run(run_args) -> None:
+def run(run_args: argparse.Namespace) -> None:
     """
     Main script logic.
     Creates Mutect2 commands for each BED region and executes in multiple threads.
