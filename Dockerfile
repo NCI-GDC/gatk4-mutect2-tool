@@ -11,7 +11,7 @@ FROM quay.io/ncigdc/bio-openjdk:8u282-slim
 
 COPY --from=builder / /
 COPY --from=gatk /usr/local/bin/ /usr/local/bin/
-COPY requirements.txt /opt
+COPY requirements.txt /opt/dist
 
 WORKDIR /opt/dist
 
