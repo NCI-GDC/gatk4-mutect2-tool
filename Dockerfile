@@ -13,11 +13,13 @@ COPY --from=builder / /
 COPY --from=gatk /usr/local/bin/ /usr/local/bin/
 COPY requirements.txt /opt
 
-WORKDIR /opt
+WORKDIR /opt/dist
 
 RUN pip install -r requirements.txt \
 	&& pip install *.tar.gz \
 	&& rm -f *.tar.gz requirements.txt
+
+WORKDIR /opt
 
 ENV TINI_VERSION v0.19.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
