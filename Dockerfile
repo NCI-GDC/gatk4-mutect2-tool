@@ -1,5 +1,5 @@
 FROM quay.io/ncigdc/gatk:4.2.4.1 AS gatk
-FROM quay.io/ncigdc/python38-builder as builder
+FROM quay.io/ncigdc/python38-builder AS builder
 
 COPY ./ /opt
 
@@ -7,9 +7,9 @@ WORKDIR /opt
 
 RUN pip install tox && tox -p
 
-FROM quay.io/ncigdc/python38
+FROM quay.io/ncigdc/bio-openjdk:8u282-slim
 
-COPY --from=builder /opt/dist/*.tar.gz /opt
+COPY --from=builder / /
 COPY --from=gatk /usr/local/bin/ /usr/local/bin/
 COPY requirements.txt /opt
 
