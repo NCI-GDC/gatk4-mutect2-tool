@@ -1,4 +1,5 @@
-FROM quay.io/ncigdc/python38-builder as builder
+FROM quay.io/ncigdc/gatk:4.2.4.1 AS gatk
+FROM quay.io/ncigdc/python38-builder AS builder
 
 COPY ./ /opt
 
@@ -6,17 +7,21 @@ WORKDIR /opt
 
 RUN pip install tox && tox -p
 
-FROM quay.io/ncigdc/python38
+FROM quay.io/ncigdc/bio-openjdk:8u282-slim
 
-COPY --from=builder /opt/dist/*.tar.gz /opt
-COPY requirements.txt /opt
+COPY --from=builder / /
+COPY --from=gatk /usr/local/bin/ /usr/local/bin/
+COPY requirements.txt /opt/dist
 
-WORKDIR /opt
+WORKDIR /opt/dist
 
 RUN pip install -r requirements.txt \
 	&& pip install *.tar.gz \
 	&& rm -f *.tar.gz requirements.txt
 
-ENTRYPOINT ["python_project"]
+WORKDIR /opt
 
-CMD ["--help"]
+ENV TINI_VERSION v0.19.0
+ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
+RUN chmod +x /tini
+ENTRYPOINT ["/tini", "--"]

@@ -1,6 +1,6 @@
-REPO = bio-python-template
+REPO = gatk4-mutect2-tool
 
-MODULE = python_project
+MODULE = gatk4_mutect2_tool
 
 # Redirect error when run in container
 COMMIT_HASH:=$(shell git rev-parse HEAD 2>/dev/null)

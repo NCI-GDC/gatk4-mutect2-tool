@@ -1,5 +1,5 @@
 try:
-    from python_project._version import version
+    from gatk4_mutect2_tool._version import version
 except ImportError:
     version = "0"
 
