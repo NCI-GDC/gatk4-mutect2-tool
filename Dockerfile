@@ -15,6 +15,10 @@ COPY requirements.txt /opt/dist
 
 WORKDIR /opt/dist
 
+RUN apt update -y \
+	&& apt install -y \
+		libbz2-dev
+
 RUN pip install -r requirements.txt \
 	&& pip install *.tar.gz \
 	&& rm -f *.tar.gz requirements.txt
