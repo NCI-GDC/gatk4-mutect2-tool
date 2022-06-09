@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Modify GATK4.1.2 Mutect2 VCF sample header to "TUMOR", "NORMAL"
 
