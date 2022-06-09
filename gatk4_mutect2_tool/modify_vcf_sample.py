@@ -3,10 +3,13 @@ Modify GATK4.1.2 Mutect2 VCF sample header to "TUMOR", "NORMAL"
 
 @author: Shenglai Li
 """
+import logging
 from typing import Optional
 
 import click
 import pysam
+
+logger = logging.getLogger(__name__)
 
 tumor_bamT = str
 normal_bamT = Optional[str]
@@ -55,6 +58,8 @@ def modify_vcf_sample(
             else:
                 new_line = new_line + '\n'
                 writer.write(new_line.encode('utf-8'))
+    except AssertionError as e:
+        logger.exception(e)
     finally:
         writer.close()
         reader.close()
@@ -76,9 +81,11 @@ def main(
     main
     '''
     tumor_sample = get_sample_name(tumor_bam)
+    logger.info(f'{tumor_sample=}')
     normal_sample = None
     if normal_bam:
         normal_sample = get_sample_name(normal_bam)
+    logger.info(f'{normal_sample=}')
     modify_vcf_sample(tumor_sample, normal_sample, vcf, output)
 
 
