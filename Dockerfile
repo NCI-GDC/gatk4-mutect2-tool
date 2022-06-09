@@ -19,7 +19,7 @@ RUN apt update -y \
 	&& apt install -y \
 		libbz2-dev \
 		liblzma-dev \
-		zlib
+		zlib1g
 
 RUN pip install -r requirements.txt \
 	&& pip install *.tar.gz \
