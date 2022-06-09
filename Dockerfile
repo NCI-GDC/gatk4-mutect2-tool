@@ -17,7 +17,9 @@ WORKDIR /opt/dist
 
 RUN apt update -y \
 	&& apt install -y \
-		libbz2-dev
+		libbz2-dev \
+		liblzma-dev \
+		zlib
 
 RUN pip install -r requirements.txt \
 	&& pip install *.tar.gz \
