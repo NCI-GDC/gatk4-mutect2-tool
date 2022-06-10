@@ -46,16 +46,12 @@ def modify_vcf_sample(
                     assert (
                         normal_bam in new_line
                     ), f'Unable to find normal sample tag in the vcf file. {normal_bam}'
-                    new_line = new_line.replace(
-                        f'{normal_bam}\t{tumor_bam}', 'NORMAL\tTUMOR'
-                    )
-                else:
-                    assert (
-                        tumor_bam in new_line
-                    ), f'Unable to find tumor sample tag in the vcf file. {tumor_bam}'
-                    new_line = new_line.replace(f'{tumor_bam}', 'TUMOR')
-                new_line = new_line + '\n'
-                writer.write(new_line.encode('utf-8'))
+                    new_line = new_line.replace(f'{normal_bam}', 'NORMAL')
+                assert (
+                    tumor_bam in new_line
+                ), f'Unable to find tumor sample tag in the vcf file. {tumor_bam}'
+                new_line = new_line.replace(f'{tumor_bam}', 'TUMOR')
+                writer.write(str.encode(f"{new_line}\n", encoding='utf-8'))
             else:
                 new_line = new_line + '\n'
                 writer.write(new_line.encode('utf-8'))
