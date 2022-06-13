@@ -11,6 +11,7 @@ import click
 import pysam
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 tumor_bamT = str
 normal_bamT = Optional[str]
@@ -64,10 +65,10 @@ def modify_vcf_sample(
 
 
 @click.command()
-@click.option('--tumor_bam', required=True, type=str)
-@click.option('--vcf', required=True)
-@click.option('--output', required=True)
-@click.option('--normal_bam', required=False)
+@click.option('--tumor_bam', required=True, type=tumor_bamT)
+@click.option('--vcf', required=True, type=vcfT)
+@click.option('--output', required=True, type=outputT)
+@click.option('--normal_bam', required=False, type=normal_bamT)
 def main(
     tumor_bam: tumor_bamT,
     vcf: vcfT,
