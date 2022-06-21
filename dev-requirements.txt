@@ -18,8 +18,10 @@ cfgv==3.1.0
     # via pre-commit
 chardet==3.0.4
     # via requests
-click==8.0.1
-    # via black
+click==8.1.3
+    # via
+    #   -c requirements.txt
+    #   black
 coverage==5.2.1
     # via pytest-cov
 detect-secrets==1.0.3

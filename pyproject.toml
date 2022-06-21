@@ -25,3 +25,9 @@ python_version = 3.8
 disallow_untyped_defs = true
 warn_return_any = true
 warn_unused_configs = true
+
+[[tool.mypy.overrides]]
+module = [
+        "pysam"
+]
+ignore_missing_imports = true
