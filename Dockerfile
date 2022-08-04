@@ -1,4 +1,4 @@
-FROM quay.io/ncigdc/gatk:4.2.4.1 AS gatk
+FROM quay.io/ncigdc/gatk:4.2.4.1-26c1d2c AS gatk
 FROM quay.io/ncigdc/python38-builder AS builder
 
 COPY ./ /opt
