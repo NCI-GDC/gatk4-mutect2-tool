@@ -1,7 +1,7 @@
 ARG REGISTRY=docker.osdc.io
 ARG BASE_CONTAINER_VERSION=2.1.0
 FROM ${REGISTRY}/ncigdc/gatk:4.2.4.1-26c1d2c AS gatk
-FROM ${REGISTRY}/ncigdc/python3.8-builder:${BASE_CONTAINER_VERSION}} AS builder
+FROM ${REGISTRY}/ncigdc/python3.8-builder:${BASE_CONTAINER_VERSION} AS builder
 
 COPY ./ /opt
 
