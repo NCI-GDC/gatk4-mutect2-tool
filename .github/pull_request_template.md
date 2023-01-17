@@ -8,4 +8,3 @@ Briefly explain the purpose behind this PR.
 - [ ] `pre-commit -a` passes locally
 - [ ] If on a feature branch, commits have been rebased into one
 - [ ] CI/CD checks are passing
-
