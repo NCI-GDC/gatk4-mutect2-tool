@@ -4,16 +4,21 @@ MODULE = gatk4_mutect2_tool
 
 # Redirect error when run in container
 COMMIT_HASH:=$(shell git rev-parse HEAD 2>/dev/null)
-GIT_DESCRIBE:=$(shell git describe --tags 2>/dev/null)
+GIT_DESCRIBE:=$(shell git describe --tags --always 2>/dev/null)
 
-DOCKER_REPO := quay.io/ncigdc
-DOCKER_IMAGE_COMMIT := ${DOCKER_REPO}/${REPO}:${COMMIT_HASH}
-DOCKER_IMAGE_DESCRIBE := ${DOCKER_REPO}/${REPO}:${GIT_DESCRIBE}
-DOCKER_IMAGE_LATEST := ${DOCKER_REPO}/${REPO}:latest
+DOCKER_REGISTRY := docker.osdc.io
+DOCKER_IMAGE_COMMIT := ${DOCKER_REGISTRY}/ncigdc/${REPO}:${COMMIT_HASH}
+DOCKER_IMAGE_DESCRIBE := ${DOCKER_REGISTRY}/ncigdc/${REPO}:${GIT_DESCRIBE}
+DOCKER_IMAGE_LATEST := ${DOCKER_REGISTRY}/ncigdc/${REPO}:latest
+
+# Env args
+PIP_EXTRA_INDEX_URL ?=
+PROXY ?=
+
 
 .PHONY: version version-*
 version:
-	@python setup.py --version
+	@python -m setuptools_scm
 
 version-docker:
 	@echo ${DOCKER_IMAGE_DESCRIBE}
@@ -22,14 +27,19 @@ version-docker:
 docker-login:
 	docker login -u="${QUAY_USERNAME}" -p="${QUAY_PASSWORD}" quay.io
 
+.PHONY: venv
+venv:
+	@echo
+	rm -rf .venv/
+	tox -r -e dev --devenv .venv
 
 .PHONY: init init-*
 init: init-pip init-hooks
-init-pip: init-venv
+init-pip:
 	@echo
 	@echo -- Installing pip packages --
-	pip-sync requirements.txt dev-requirements.txt
-	python setup.py develop
+	python -m pip install ".[dev,test]"
+	python -m pip install --no-deps -r requirements.txt -e .
 
 init-hooks:
 	@echo
@@ -54,12 +64,8 @@ clean-docker:
 
 
 .PHONY: requirements requirements-*
-requirements: init-venv requirements-prod requirements-dev
-requirements-dev:
-	pip-compile -o dev-requirements.txt dev-requirements.in
-
-requirements-prod:
-	pip-compile -o requirements.txt
+requirements:
+	tox -e requirements
 
 .PHONY: build build-*
 
@@ -70,14 +76,24 @@ build-docker: clean
 	@echo -- Building docker --
 	docker build . \
 		--file ./Dockerfile \
-		--build-arg http_proxy=${PROXY} \
-		--build-arg https_proxy=${PROXY} \
+		--build-arg http_proxy="${PROXY}" \
+		--build-arg https_proxy="${PROXY}" \
+		--build-arg REGISTRY="${DOCKER_REGISTRY}" \
 		-t "${DOCKER_IMAGE_COMMIT}" \
-		-t "${DOCKER_IMAGE_LATEST}"
+		-t "${DOCKER_IMAGE_DESCRIBE}" \
+		-t "${REPO}"
 
 build-pypi: clean
 	@echo
 	tox -e check_dist
+
+.PHONY: run run-*
+run:
+	@echo
+
+run-docker:
+	@echo
+	docker run --rm "${DOCKER_IMAGE_COMMIT}"
 
 .PHONY: lint test test-* tox
 test: tox
@@ -98,7 +114,6 @@ tox:
 
 .PHONY: publish-*
 publish-docker:
-	docker tag ${DOCKER_IMAGE_COMMIT} ${DOCKER_IMAGE_DESCRIBE}
 	docker push ${DOCKER_IMAGE_COMMIT}
 	docker push ${DOCKER_IMAGE_DESCRIBE}
 
