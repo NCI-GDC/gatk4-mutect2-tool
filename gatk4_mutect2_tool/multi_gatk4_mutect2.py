@@ -20,7 +20,7 @@ from typing import Any, Callable, Generator, List, NamedTuple, Optional
 try:
     from gatk4_mutect2_tool import __version__
 except Exception:
-    __version__ = '0.0.0'
+    __version__ = "0.0.0"
 
 logger = logging.getLogger(__name__)
 
@@ -132,7 +132,7 @@ def key_to_cmd(string: str) -> str:
     string: xx_xx_xx
     returns: --xx-xx-xx
     """
-    return '--{}'.format(string.replace('_', '-'))
+    return "--{}".format(string.replace("_", "-"))
 
 
 def process_argv(argv: Optional[List] = None) -> argparse.Namespace:
@@ -148,35 +148,35 @@ def process_argv(argv: Optional[List] = None) -> argparse.Namespace:
     else:
         args, unknown_args = parser.parse_known_args()
 
-    arg_file = 'argument_file'
+    arg_file = "argument_file"
     args_dict = vars(args)
-    args_dict['extras'] = unknown_args
+    args_dict["extras"] = unknown_args
     exclude = [
-        'output',
-        'f1r2_tar_gz',
-        'bam_output',
-        'intervals',
-        'nthreads',
-        'java_heap',
-        'gatk4_path',
-        'extras',
+        "output",
+        "f1r2_tar_gz",
+        "bam_output",
+        "intervals",
+        "nthreads",
+        "java_heap",
+        "gatk4_path",
+        "extras",
     ]
     cmds = list()
     for k, v in args_dict.items():
         if k not in exclude:
             if v is not None and v is not False:
                 if v is True:
-                    cmds.append('{}'.format(key_to_cmd(k)))
+                    cmds.append("{}".format(key_to_cmd(k)))
                 elif isinstance(v, str) or isinstance(v, int) or isinstance(v, float):
-                    cmds.append('{} {}'.format(key_to_cmd(k), str(v)))
+                    cmds.append("{} {}".format(key_to_cmd(k), str(v)))
                 elif isinstance(v, list):
                     for i in v:
-                        cmds.append('{} {}'.format(key_to_cmd(k), i))
-    with open(arg_file, 'w') as of:
+                        cmds.append("{} {}".format(key_to_cmd(k), i))
+    with open(arg_file, "w") as of:
         for arg in cmds:
-            of.writelines(arg + '\n')
-    args_dict['arg_file'] = os.path.abspath(arg_file)
-    run_args = namedtuple('RunArgs', list(args_dict.keys()))  # type: ignore
+            of.writelines(arg + "\n")
+    args_dict["arg_file"] = os.path.abspath(arg_file)
+    run_args = namedtuple("RunArgs", list(args_dict.keys()))  # type: ignore
     return run_args(**args_dict)  # type: ignore
 
 
@@ -200,9 +200,9 @@ def yield_formatted_commands(
             BLOCK_NUM=i,
         )
         if f1r2:
-            cmd += ' --f1r2-tar-gz {}.{}.tar.gz'.format(output_prefix, i)
+            cmd += " --f1r2-tar-gz {}.{}.tar.gz".format(output_prefix, i)
         if bamout:
-            cmd += ' --bam-output {}.{}.reassembly.bam'.format(output_prefix, i)
+            cmd += " --bam-output {}.{}.reassembly.bam".format(output_prefix, i)
         yield cmd
 
 
@@ -211,391 +211,391 @@ def setup_parser() -> argparse.ArgumentParser:
     Loads the parser
     """
     parser = argparse.ArgumentParser(
-        prog='GATK4.2.4.1 Mutect2 multithreading wrapper.', add_help=True
+        prog="GATK4.2.4.1 Mutect2 multithreading wrapper.", add_help=True
     )
     parser.add_argument("--version", action="version", version=__version__)
     parser.add_argument(
-        '-I', '--input', required=True, action='append', help='BAM files.'
+        "-I", "--input", required=True, action="append", help="BAM files."
     )
     parser.add_argument(
-        '-O',
-        '--output',
+        "-O",
+        "--output",
         required=True,
-        help='Output prefix on files to which variants should be written.',
+        help="Output prefix on files to which variants should be written.",
     )
     parser.add_argument(
-        '-R', '--reference', required=True, help='Reference sequence file.'
+        "-R", "--reference", required=True, help="Reference sequence file."
     )
     parser.add_argument(
-        '--intervals',
+        "--intervals",
         required=True,
-        help='One or more genomic intervals over which to operate',
+        help="One or more genomic intervals over which to operate",
     )
     parser.add_argument(
-        '--java_heap',
+        "--java_heap",
         required=True,
-        help='JVM arguments to GATK. This is NOT a GATK parameter.',
+        help="JVM arguments to GATK. This is NOT a GATK parameter.",
     )
     parser.add_argument(
-        '--nthreads',
+        "--nthreads",
         type=int,
         required=True,
-        help='Number of threads used for this wrapper code. This is NOT a GATK parameter.',
+        help="Number of threads used for this wrapper code. This is NOT a GATK parameter.",
     )
     parser.add_argument(
-        '--gatk4_path',
+        "--gatk4_path",
         required=True,
-        help='GATK4 executable path.',
-        default='/usr/local/bin/gatk',
+        help="GATK4 executable path.",
+        default="/usr/local/bin/gatk",
     )
     parser.add_argument(
-        '--active-probability-threshold',
+        "--active-probability-threshold",
         required=False,
-        help='Minimum probability for a locus to be considered active.',
+        help="Minimum probability for a locus to be considered active.",
     )
     parser.add_argument(
-        '--adaptive-pruning-initial-error-rate',
+        "--adaptive-pruning-initial-error-rate",
         required=False,
-        help='Initial base error rate estimate for adaptive pruning.',
+        help="Initial base error rate estimate for adaptive pruning.",
     )
     parser.add_argument(
-        '--af-of-alleles-not-in-resource',
+        "--af-of-alleles-not-in-resource",
         required=False,
-        help='Population allele fraction assigned to alleles not found in germline resource. Please see docs/mutect/mutect2.pdf fora derivation of the.',
+        help="Population allele fraction assigned to alleles not found in germline resource. Please see docs/mutect/mutect2.pdf fora derivation of the.",
     )
     parser.add_argument(
-        '--allow-non-unique-kmers-in-ref',
+        "--allow-non-unique-kmers-in-ref",
         required=False,
-        help='Allow graphs that have non-unique kmers in the reference.',
-        action='store_true',
+        help="Allow graphs that have non-unique kmers in the reference.",
+        action="store_true",
     )
     parser.add_argument(
-        '--assembly-region-padding',
+        "--assembly-region-padding",
         required=False,
-        help='Number of additional bases of context to include around each assembly region.',
+        help="Number of additional bases of context to include around each assembly region.",
     )
     parser.add_argument(
-        '--bam-output',
+        "--bam-output",
         required=False,
-        help='If specified, assembled haplotypes wil be written to bam.',
-        action='store_true',
+        help="If specified, assembled haplotypes wil be written to bam.",
+        action="store_true",
     )
     parser.add_argument(
-        '--bam-writer-type',
+        "--bam-writer-type",
         required=False,
-        help='Which haplotypes should be written to the BAM.',
+        help="Which haplotypes should be written to the BAM.",
     )
     parser.add_argument(
-        '--base-quality-score-threshold',
+        "--base-quality-score-threshold",
         required=False,
-        help='Base qualities below this threshold will be reduced to the minimum (6).',
+        help="Base qualities below this threshold will be reduced to the minimum (6).",
     )
     parser.add_argument(
-        '--callable-depth',
+        "--callable-depth",
         required=False,
-        help='Minimum depth to be considered callable for Mutect stats. Does not affect genotyping.',
+        help="Minimum depth to be considered callable for Mutect stats. Does not affect genotyping.",
     )
     parser.add_argument(
-        '--disable-adaptive-pruning',
+        "--disable-adaptive-pruning",
         required=False,
-        help='Disable the adaptive algorithm for pruning paths in the graph.',
-        action='store_true',
+        help="Disable the adaptive algorithm for pruning paths in the graph.",
+        action="store_true",
     )
     parser.add_argument(
-        '--disable-bam-index-caching',
+        "--disable-bam-index-caching",
         required=False,
-        help='If true, dont cache bam indexes, this will reduce memory requirements but may harm performance if many intervals are specified. Caching is automatically disabled if there are no intervals specified.',
-        action='store_true',
+        help="If true, dont cache bam indexes, this will reduce memory requirements but may harm performance if many intervals are specified. Caching is automatically disabled if there are no intervals specified.",
+        action="store_true",
     )
     parser.add_argument(
-        '--disable-sequence-dictionary-validation',
+        "--disable-sequence-dictionary-validation",
         required=False,
-        help='If specified, do not check the sequence dictionaries from our inputs for compatibility. Use at your own risk!',
-        action='store_true',
+        help="If specified, do not check the sequence dictionaries from our inputs for compatibility. Use at your own risk!",
+        action="store_true",
     )
     parser.add_argument(
-        '--disable-tool-default-annotations',
+        "--disable-tool-default-annotations",
         required=False,
-        help='Disable all tool default annotations.',
-        action='store_true',
+        help="Disable all tool default annotations.",
+        action="store_true",
     )
     parser.add_argument(
-        '--dont-increase-kmer-sizes-for-cycles',
+        "--dont-increase-kmer-sizes-for-cycles",
         required=False,
-        help='Disable iterating over kmer sizes when graph cycles are detected.',
-        action='store_true',
+        help="Disable iterating over kmer sizes when graph cycles are detected.",
+        action="store_true",
     )
     parser.add_argument(
-        '--dont-trim-active-regions',
+        "--dont-trim-active-regions",
         required=False,
-        help='If specified, we will not trim down the active region from the full region (active + extension) to just the active interval for genotyping.',
-        action='store_true',
+        help="If specified, we will not trim down the active region from the full region (active + extension) to just the active interval for genotyping.",
+        action="store_true",
     )
     parser.add_argument(
-        '--dont-use-soft-clipped-bases',
+        "--dont-use-soft-clipped-bases",
         required=False,
-        help='Do not analyze soft clipped bases in the reads.',
-        action='store_true',
+        help="Do not analyze soft clipped bases in the reads.",
+        action="store_true",
     )
     parser.add_argument(
-        '--downsampling-stride',
+        "--downsampling-stride",
         required=False,
-        help='Downsample a pool of reads starting within a range of one or more bases.',
+        help="Downsample a pool of reads starting within a range of one or more bases.",
     )
     parser.add_argument(
-        '--emit-ref-confidence',
+        "--emit-ref-confidence",
         required=False,
-        help='(BETA feature) Mode for emitting reference confidence scores.',
+        help="(BETA feature) Mode for emitting reference confidence scores.",
     )
     parser.add_argument(
-        '--enable-all-annotations',
+        "--enable-all-annotations",
         required=False,
-        help='Use all possible annotations (not for the faint of heart).',
-        action='store_true',
+        help="Use all possible annotations (not for the faint of heart).",
+        action="store_true",
     )
     parser.add_argument(
-        '--f1r2-max-depth',
+        "--f1r2-max-depth",
         required=False,
-        help='Sites with depth higher than this value will be grouped.',
+        help="Sites with depth higher than this value will be grouped.",
     )
     parser.add_argument(
-        '--f1r2-median-mq',
+        "--f1r2-median-mq",
         required=False,
-        help='Skip sites with median mapping quality below this value.',
+        help="Skip sites with median mapping quality below this value.",
     )
     parser.add_argument(
-        '--f1r2-min-bq',
+        "--f1r2-min-bq",
         required=False,
-        help='Exclude bases below this quality from pileup.',
+        help="Exclude bases below this quality from pileup.",
     )
     parser.add_argument(
-        '--f1r2-tar-gz',
+        "--f1r2-tar-gz",
         required=False,
-        help='If specified, collect F1R2 counts and output files into tar.gz file.',
-        action='store_true',
+        help="If specified, collect F1R2 counts and output files into tar.gz file.",
+        action="store_true",
     )
     parser.add_argument(
-        '--force-active',
+        "--force-active",
         required=False,
-        help='If provided, all regions will be marked as active.',
-        action='store_true',
+        help="If provided, all regions will be marked as active.",
+        action="store_true",
     )
     parser.add_argument(
-        '--genotype-filtered-alleles',
+        "--genotype-filtered-alleles",
         required=False,
-        help='Whether to force genotype even filtered alleles.',
-        action='store_true',
+        help="Whether to force genotype even filtered alleles.",
+        action="store_true",
     )
     parser.add_argument(
-        '--genotype-germline-sites',
+        "--genotype-germline-sites",
         required=False,
-        help='(EXPERIMENTAL) Call all apparent germline site even though they will ultimately be filtered.',
-        action='store_true',
+        help="(EXPERIMENTAL) Call all apparent germline site even though they will ultimately be filtered.",
+        action="store_true",
     )
     parser.add_argument(
-        '--genotype-pon-sites',
+        "--genotype-pon-sites",
         required=False,
-        help='Call sites in the PoN even though they will ultimately be filtered.',
-        action='store_true',
+        help="Call sites in the PoN even though they will ultimately be filtered.",
+        action="store_true",
     )
     parser.add_argument(
-        '--germline-resource',
+        "--germline-resource",
         required=False,
-        help='Population vcf of germline sequencing containing allele fractions.',
+        help="Population vcf of germline sequencing containing allele fractions.",
     )
     parser.add_argument(
-        '--gvcf-lod-band',
+        "--gvcf-lod-band",
         required=False,
-        help='Exclusive upper bounds for reference confidence LOD bands (must be specified in increasing order).',
+        help="Exclusive upper bounds for reference confidence LOD bands (must be specified in increasing order).",
     )
     parser.add_argument(
-        '--ignore-itr-artifacts',
+        "--ignore-itr-artifacts",
         required=False,
-        help='Turn off read transformer that clips artifacts associated with end repair insertions near inverted tandem repeats.',
-        action='store_true',
+        help="Turn off read transformer that clips artifacts associated with end repair insertions near inverted tandem repeats.",
+        action="store_true",
     )
     parser.add_argument(
-        '--initial-tumor-lod',
+        "--initial-tumor-lod",
         required=False,
-        help='Log 10 odds threshold to consider pileup active.',
+        help="Log 10 odds threshold to consider pileup active.",
     )
     parser.add_argument(
-        '--interval-merging-rule',
+        "--interval-merging-rule",
         required=False,
-        help='Interval merging rule for abutting intervals.',
+        help="Interval merging rule for abutting intervals.",
     )
     parser.add_argument(
-        '--kmer-size',
+        "--kmer-size",
         required=False,
-        help='Kmer size to use in the read threading assembler.',
+        help="Kmer size to use in the read threading assembler.",
     )
     parser.add_argument(
-        '--max-assembly-region-size',
+        "--max-assembly-region-size",
         required=False,
-        help='Maximum size of an assembly region.',
+        help="Maximum size of an assembly region.",
     )
     parser.add_argument(
-        '--max-mnp-distance',
+        "--max-mnp-distance",
         required=False,
-        help='Two or more phased substitutions separated by this distance or less are merged into MNPs.',
+        help="Two or more phased substitutions separated by this distance or less are merged into MNPs.",
     )
     parser.add_argument(
-        '--max-num-haplotypes-in-population',
+        "--max-num-haplotypes-in-population",
         required=False,
-        help='Maximum number of haplotypes to consider for your population.',
+        help="Maximum number of haplotypes to consider for your population.",
     )
     parser.add_argument(
-        '--max-population-af',
+        "--max-population-af",
         required=False,
-        help='Maximum population allele frequency in tumor-only mode.',
+        help="Maximum population allele frequency in tumor-only mode.",
     )
     parser.add_argument(
-        '--max-prob-propagation-distance',
+        "--max-prob-propagation-distance",
         required=False,
-        help='Upper limit on how many bases away probability mass can be moved around when calculating the boundaries between active and inactive assembly regions.',
+        help="Upper limit on how many bases away probability mass can be moved around when calculating the boundaries between active and inactive assembly regions.",
     )
     parser.add_argument(
-        '--max-reads-per-alignment-start',
+        "--max-reads-per-alignment-start",
         required=False,
-        help='Maximum number of reads to retain per alignment start position. Reads above this threshold will be downsampled. Set to 0 to disable.',
+        help="Maximum number of reads to retain per alignment start position. Reads above this threshold will be downsampled. Set to 0 to disable.",
     )
     parser.add_argument(
-        '--max-suspicious-reads-per-alignment-start',
+        "--max-suspicious-reads-per-alignment-start",
         required=False,
-        help='Maximum number of suspicious reads (mediocre mapping quality or too many substitutions) allowed in a downsampling stride. Set to 0 to disable.',
+        help="Maximum number of suspicious reads (mediocre mapping quality or too many substitutions) allowed in a downsampling stride. Set to 0 to disable.",
     )
     parser.add_argument(
-        '--max-unpruned-variants',
+        "--max-unpruned-variants",
         required=False,
-        help='Maximum number of variants in graph the adaptive pruner will allow.',
+        help="Maximum number of variants in graph the adaptive pruner will allow.",
     )
     parser.add_argument(
-        '--min-assembly-region-size',
+        "--min-assembly-region-size",
         required=False,
-        help='Minimum size of an assembly region.',
+        help="Minimum size of an assembly region.",
     )
     parser.add_argument(
-        '--min-base-quality-score',
+        "--min-base-quality-score",
         required=False,
-        help='Minimum base quality required to consider a base for calling.',
+        help="Minimum base quality required to consider a base for calling.",
     )
     parser.add_argument(
-        '--min-dangling-branch-length',
+        "--min-dangling-branch-length",
         required=False,
-        help='Minimum length of a dangling branch to attempt recovery.',
+        help="Minimum length of a dangling branch to attempt recovery.",
     )
     parser.add_argument(
-        '--min-pruning',
+        "--min-pruning",
         required=False,
-        help='Minimum support to not prune paths in the graph.',
+        help="Minimum support to not prune paths in the graph.",
     )
     parser.add_argument(
-        '--minimum-allele-fraction',
+        "--minimum-allele-fraction",
         required=False,
-        help='Lower bound of variant allele fractions to consider when calculating variant LOD.',
+        help="Lower bound of variant allele fractions to consider when calculating variant LOD.",
     )
     parser.add_argument(
-        '--mitochondria-mode',
+        "--mitochondria-mode",
         required=False,
-        help='Mitochondria mode sets emission and initial LODs to 0.',
-        action='store_true',
+        help="Mitochondria mode sets emission and initial LODs to 0.",
+        action="store_true",
     )
     parser.add_argument(
-        '--native-pair-hmm-threads',
+        "--native-pair-hmm-threads",
         required=False,
-        help='How many threads should a native pairHMM implementation use.',
+        help="How many threads should a native pairHMM implementation use.",
     )
     parser.add_argument(
-        '--native-pair-hmm-use-double-precision',
+        "--native-pair-hmm-use-double-precision",
         required=False,
-        help='Use double precision in the native pairHmm. This is slower but matches the java implementation better.',
-        action='store_true',
+        help="Use double precision in the native pairHmm. This is slower but matches the java implementation better.",
+        action="store_true",
     )
     parser.add_argument(
-        '--normal-lod',
+        "--normal-lod",
         required=False,
-        help='Log 10 odds threshold for calling normal variant non-germline.',
+        help="Log 10 odds threshold for calling normal variant non-germline.",
     )
     parser.add_argument(
-        '--normal-sample',
+        "--normal-sample",
         required=False,
-        help='BAM sample name of normal(s), if any. May be URL-encoded as output by GetSampleName with -encode argument.',
+        help="BAM sample name of normal(s), if any. May be URL-encoded as output by GetSampleName with -encode argument.",
     )
     parser.add_argument(
-        '--num-pruning-samples',
+        "--num-pruning-samples",
         required=False,
-        help='Number of samples that must pass the minPruning threshold.',
+        help="Number of samples that must pass the minPruning threshold.",
     )
     parser.add_argument(
-        '--pair-hmm-gap-continuation-penalty',
+        "--pair-hmm-gap-continuation-penalty",
         required=False,
-        help='Flat gap continuation penalty for use in the Pair HMM.',
+        help="Flat gap continuation penalty for use in the Pair HMM.",
     )
     parser.add_argument(
-        '--pair-hmm-implementation',
+        "--pair-hmm-implementation",
         required=False,
-        help='The PairHMM implementation to use for genotype likelihood calculations.',
+        help="The PairHMM implementation to use for genotype likelihood calculations.",
     )
     parser.add_argument(
-        '--panel-of-normals',
+        "--panel-of-normals",
         required=False,
-        help='VCF file of sites observed in normal.',
+        help="VCF file of sites observed in normal.",
     )
     parser.add_argument(
-        '--pcr-indel-model', required=False, help='The PCR indel model to use.'
+        "--pcr-indel-model", required=False, help="The PCR indel model to use."
     )
     parser.add_argument(
-        '--pcr-indel-qual',
+        "--pcr-indel-qual",
         required=False,
-        help='Phred-scaled PCR SNV qual for overlapping fragments.',
+        help="Phred-scaled PCR SNV qual for overlapping fragments.",
     )
     parser.add_argument(
-        '--pcr-snv-qual',
+        "--pcr-snv-qual",
         required=False,
-        help='Phred-scaled PCR SNV qual for overlapping fragments.',
+        help="Phred-scaled PCR SNV qual for overlapping fragments.",
     )
     parser.add_argument(
-        '--pedigree',
+        "--pedigree",
         required=False,
         help='Pedigree file for determining the population "founders".',
     )
     parser.add_argument(
-        '--phred-scaled-global-read-mismapping-rate',
+        "--phred-scaled-global-read-mismapping-rate",
         required=False,
-        help='The global assumed mismapping rate for reads.',
+        help="The global assumed mismapping rate for reads.",
     )
     parser.add_argument(
-        '--pruning-lod-threshold',
+        "--pruning-lod-threshold",
         required=False,
-        help='Ln likelihood ratio threshold for adaptive pruning algorithm.',
+        help="Ln likelihood ratio threshold for adaptive pruning algorithm.",
     )
     parser.add_argument(
-        '--recover-all-dangling-branches',
+        "--recover-all-dangling-branches",
         required=False,
-        help='Recover all dangling branches.',
-        action='store_true',
+        help="Recover all dangling branches.",
+        action="store_true",
     )
     parser.add_argument(
-        '--showHidden',
+        "--showHidden",
         required=False,
-        help='Display hidden arguments.',
-        action='store_true',
+        help="Display hidden arguments.",
+        action="store_true",
     )
     parser.add_argument(
-        '--sites-only-vcf-output',
+        "--sites-only-vcf-output",
         required=False,
-        help='If true, dont emit genotype fields when writing vcf file output.',
-        action='store_true',
+        help="If true, dont emit genotype fields when writing vcf file output.",
+        action="store_true",
     )
     parser.add_argument(
-        '--smith-waterman',
+        "--smith-waterman",
         required=False,
-        help='Which Smith-Waterman implementation to use, generally FASTEST_AVAILABLE is the right choice.',
+        help="Which Smith-Waterman implementation to use, generally FASTEST_AVAILABLE is the right choice.",
     )
     parser.add_argument(
-        '--tumor-lod-to-emit',
+        "--tumor-lod-to-emit",
         required=False,
-        help='Log 10 odds threshold to emit variant to VCF.',
+        help="Log 10 odds threshold to emit variant to VCF.",
     )
     parser.add_argument(
         "--timeout",
@@ -631,7 +631,7 @@ def run(run_args: argparse.Namespace) -> None:
         raise ValueError("Exceptions raised during processing.")
 
     # Check outputs
-    p = pathlib.Path('.')
+    p = pathlib.Path(".")
     outputs = list(p.glob("*.vcf.gz"))
 
     # Sanity check
@@ -640,7 +640,7 @@ def run(run_args: argparse.Namespace) -> None:
     return
 
 
-def main(argv: list = None) -> int:
+def main(argv: Optional[list] = None) -> int:
     exit_code = 0
 
     argv = argv or sys.argv
