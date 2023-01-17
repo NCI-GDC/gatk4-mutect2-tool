@@ -1,12 +1,75 @@
 [build-system]
-requires = ["setuptools>=42", "wheel", "setuptools_scm[toml]>=6.0"]
-build-backend = "setuptools.build_meta"
+requires = ["flit_scm"]
+build-backend = "flit_scm:buildapi"
+
+[project]
+name = "gatk4-mutect2-tool"
+description = "Tool for running GATK4 Mutect2"
+authors = [
+    {name = "Shenglai Li", email = "sli6@uchicago.edu"}
+]
+
+readme = "README.md"
+requires-python = ">=3.8"
+license = {file = "LICENSE"}
+classifiers = [
+    "License :: OSI Approved :: Apache Software License",
+	"Programming Language :: Python :: 3",
+	"Programming Language :: Python :: 3 :: Only"
+]
+dynamic = ["version"]
+dependencies = [
+    "click",
+    "pysam"
+]
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "detect-secrets==1.2.0",
+    "flake8-docstrings",
+    "flake8",
+    "isort",
+    "mypy",
+    "pre-commit>=2.9.0",
+]
+
+test = [
+    "coverage[toml]",
+    "pytest",
+]
+
+[project.urls]
+homepage = "https://github.com/NCI-GDC/gatk4-mutect2-tool"
+
+[project.scripts]
+"gatk4_mutect2_tool" = "gatk4_mutect2_tool.__main__:main"
+"modify_vcf_sample" = "gatk4_mutect2_tool.modify_vcf_sample:main"
 
 [tool.setuptools_scm]
-local_scheme = "dirty-tag"
-version_scheme = "release-branch-semver"
 write_to = "gatk4_mutect2_tool/_version.py"
+local_scheme = "dirty-tag"
+version_scheme = "python-simplified-semver"
 fallback_version = "0"
+
+[tool.coverage.run]
+source = ["gatk4_mutect2_tool"]
+branch = true
+parallel = true
+
+[tool.flit.module]
+name = "gatk4_mutect2_tool"
+
+[tool.flit.sdist]
+include = ["gatk4_mutect2_tool/_version.py"]
+exclude = [
+        ".*",
+        "dev-requirements.*",
+        "Dockerfile",
+        "Jenkinsfile",
+        "*travis.yml",
+        "tox.ini",
+]
 
 [tool.black]
 line-length = 88
@@ -26,8 +89,5 @@ disallow_untyped_defs = true
 warn_return_any = true
 warn_unused_configs = true
 
-[[tool.mypy.overrides]]
-module = [
-        "pysam"
-]
-ignore_missing_imports = true
+[tool.coverage.report]
+show_missing = true
