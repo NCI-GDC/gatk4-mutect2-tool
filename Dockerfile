@@ -10,13 +10,13 @@ WORKDIR /opt
 
 RUN pip install tox && tox -p
 
-FROM ${REGISTRY}/ncigdc/bio-openjdk:8u282-slim
+FROM ${REGISTRY}/ncigdc/python38-builder-jdk11
 
-COPY --from=builder / /
+WORKDIR /opt
+
 COPY --from=gatk /usr/local/bin/ /usr/local/bin/
-COPY requirements.txt /opt/dist
 
-WORKDIR /opt/dist
+COPY requirements.txt /opt/
 
 RUN apt update -y \
 	&& apt install -y \
@@ -24,11 +24,9 @@ RUN apt update -y \
 		liblzma-dev \
 		zlib1g
 
-RUN pip install -r requirements.txt \
-	&& pip install *.tar.gz \
-	&& rm -f *.tar.gz requirements.txt
-
-WORKDIR /opt
+RUN ls / && ls /opt && pip install --no-deps -r requirements.txt \
+	&& pip install --no-deps *.whl \
+	&& rm -f *.whl requirements.txt
 
 ENV TINI_VERSION v0.19.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /tini
