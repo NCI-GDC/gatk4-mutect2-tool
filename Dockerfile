@@ -2,7 +2,7 @@ ARG REGISTRY=docker.osdc.io
 ARG BASE_CONTAINER_VERSION=1.4.0
 FROM ${REGISTRY}/ncigdc/gatk:4.2.4.1-26c1d2c AS gatk
 # Using older Python image for compatibility
-FROM ${REGISTRY}/ncigdc/python38-builder:${BASE_CONTAINER_VERSION} AS builder
+FROM ${REGISTRY}/ncigdc/python38-builder:1.4.0 AS builder
 
 COPY ./ /opt
 
