@@ -1,5 +1,8 @@
-FROM quay.io/ncigdc/gatk:4.2.4.1-26c1d2c AS gatk
-FROM quay.io/ncigdc/python38-builder AS builder
+ARG REGISTRY=docker.osdc.io
+ARG BASE_CONTAINER_VERSION=1.4.0
+FROM ${REGISTRY}/ncigdc/gatk:4.2.4.1-26c1d2c AS gatk
+# Using older Python image for compatibility
+FROM ${REGISTRY}/ncigdc/python38-builder:1.4.0 AS builder
 
 COPY ./ /opt
 
@@ -7,7 +10,7 @@ WORKDIR /opt
 
 RUN pip install tox && tox -p
 
-FROM quay.io/ncigdc/bio-openjdk:8u282-slim
+FROM ${REGISTRY}/ncigdc/bio-openjdk:8u282-slim
 
 COPY --from=builder / /
 COPY --from=gatk /usr/local/bin/ /usr/local/bin/
